@@ -1,0 +1,58 @@
+name: Deploy bootcamp stack
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Check repository structure
+        run: |
+          test -d infra/docker || (echo "Missing infra/docker" && exit 1)
+          test -d dags || (echo "Missing dags" && exit 1)
+          test -f infra/docker/docker-compose.yml || (echo "Missing docker-compose.yml" && exit 1)
+          test -f infra/docker/landing/index.html || (echo "Missing landing/index.html" && exit 1)
+          test -f infra/docker/.env.example || (echo "Missing .env.example" && exit 1)
+          echo "Structure OK"
+
+      - name: Validate docker compose
+        run: docker compose --env-file infra/docker/.env.example -f infra/docker/docker-compose.yml config > /dev/null
+
+      - name: Compile DAGs
+        run: python3 -m compileall dags
+
+      - name: Deploy to server via SCP
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SERVER_PRIVATE_KEY }}
+          port: 22
+          source: |
+            dags
+            plugins
+            infra
+            dbt
+            scripts
+          target: /root/bootcamp/yandex_etl
+
+      - name: Restart stack on server
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SERVER_PRIVATE_KEY }}
+          port: 22
+          script: |
+            cd /root/bootcamp/yandex_etl/infra/docker
+            cp -n .env.example .env || true
+            docker compose --env-file .env up -d --build
+            docker ps
