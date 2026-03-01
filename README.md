@@ -46,24 +46,32 @@ docker compose --env-file .env up -d --build
 3. Открой landing page:
 
 ```text
-http://localhost:8085
+http://localhost:18085
 ```
 
 На landing page есть ссылки на UI и кнопки с параметрами подключения для PostgreSQL, ClickHouse и Greenplum.
 
+## Порты по умолчанию
+
+По умолчанию стенд вынесен в отдельный диапазон портов, чтобы не конфликтовать с другими локальными проектами и системными сервисами.
+Если нужно, все внешние порты меняются только через `infra/docker/.env`.
+
 ## UI и доступы по умолчанию
 
 Если стек поднят локально, используй `localhost`.
-Если стек поднят на сервере, замени `localhost` на IP или домен сервера, например `http://<server-ip>:8080`.
+Если стек поднят на сервере, замени `localhost` на IP или домен сервера, например `http://<server-ip>:18080`.
 
-- Airflow UI: `http://localhost:8080` (`admin / admin123`)
-- Kafka UI: `http://localhost:8081`
-- MinIO Console: `http://localhost:9001` (`minio / minio12345`)
-- Spark Master UI: `http://localhost:8088`
-- PostgreSQL: `localhost:5432`
-- ClickHouse HTTP: `http://localhost:8123`
-- Greenplum: `localhost:5433`
-- Landing page: `http://localhost:8085`
+- Airflow UI: `http://localhost:18080` (`admin / admin123`)
+- Kafka UI: `http://localhost:18081`
+- MinIO Console: `http://localhost:19001` (`minio / minio12345`)
+- Spark Master UI: `http://localhost:18088`
+- Spark Master RPC: `localhost:17077`
+- Kafka broker: `localhost:19092`
+- PostgreSQL: `localhost:15432`
+- ClickHouse HTTP: `http://localhost:18123`
+- ClickHouse native: `localhost:19009`
+- Greenplum: `localhost:15433`
+- Landing page: `http://localhost:18085`
 
 ## Подключение из DBeaver
 
@@ -75,31 +83,31 @@ http://localhost:8085
 
 - Driver: `PostgreSQL`
 - Host: `localhost`
-- Port: `5432`
+- Port: `15432`
 - Database: `airflow`
 - User: `postgres`
 - Password: `postgres123`
-- JDBC URL: `jdbc:postgresql://localhost:5432/airflow`
+- JDBC URL: `jdbc:postgresql://localhost:15432/airflow`
 
 ### ClickHouse
 
 - Driver: `ClickHouse`
 - Host: `localhost`
-- Port: `8123`
+- Port: `18123`
 - Database: `default`
 - User: `clickhouse`
 - Password: `clickhouse123`
-- JDBC URL: `jdbc:clickhouse://localhost:8123/default`
+- JDBC URL: `jdbc:clickhouse://localhost:18123/default`
 
 ### Greenplum
 
 - Driver: `PostgreSQL`
 - Host: `localhost`
-- Port: `5433`
+- Port: `15433`
 - Database: `postgres`
 - User: `gpadmin`
 - Password: `greenplum123`
-- JDBC URL: `jdbc:postgresql://localhost:5433/postgres`
+- JDBC URL: `jdbc:postgresql://localhost:15433/postgres`
 
 ## Spark submit
 
